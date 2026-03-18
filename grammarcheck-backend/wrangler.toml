@@ -1,0 +1,7 @@
+name = "grammarcheck-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# 🔌 CONNECTION POINT FOR DATABASE (add later)
+# [vars]
+# DATABASE_URL = "postgresql://..."  ← Add this in Cloudflare Dashboard, not here!
