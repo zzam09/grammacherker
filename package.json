@@ -1,0 +1,26 @@
+{
+  "name": "grammarcheck",
+  "version": "1.0.0",
+  "description": "Fast grammar checking with Vue.js and Node.js",
+  "scripts": {
+    "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
+    "dev:frontend": "cd frontend && pnpm dev",
+    "dev:backend": "cd backend && pnpm dev",
+    "build": "cd frontend && pnpm build",
+    "start": "cd backend && pnpm start",
+    "install:all": "pnpm install && cd frontend && pnpm install && cd ../backend && pnpm install",
+    "clean": "cd frontend && pnpm clean && cd ../backend && pnpm clean"
+  },
+  "keywords": [
+    "grammar",
+    "checker",
+    "vue",
+    "nodejs",
+    "shadcn-ui"
+  ],
+  "author": "zzam09",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
