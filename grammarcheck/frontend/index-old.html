@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GrammarCheck — Fast Grammar Analysis</title>
+    <meta name="description" content="Instant grammar checking with Vue.js and Tailwind CSS" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
+
+    /* ═══════════════════════════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════════════════════════ */
+    .app-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 18px 80px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════════════ */
+    header {
+      text-align: center;
+      padding: 52px 0 40px;
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+
+    .logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #4f6ef7 0%, #7b5cf0 100%);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 6px 20px rgba(79,110,247,.3);
+    }
+
+    header h1 {
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 800;
+      background: linear-gradient(135deg, #4f6ef7, #7b5cf0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -.5px;
+    }
+
+    header p.tagline {
+      font-size: 16px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TABS
+    ═══════════════════════════════════════════════════════════ */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--surface);
+      border-radius: 50px;
+      padding: 5px;
+      box-shadow: var(--shadow);
+      width: fit-content;
+      margin: 0 auto 32px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 9px 28px;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all var(--transition);
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(79,110,247,.35);
+    }
+
+    .tab-btn:hover:not(.active) {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    /* Tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════
+       CHECKER PANEL
+    ═══════════════════════════════════════════════════════════ */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .char-counter {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .char-counter.warn { color: var(--yellow); }
+    .char-counter.error { color: var(--red); }
+
+    /* ── Textarea ── */
+    #input-text {
+      width: 100%;
+      min-height: 200px;
+      max-height: 400px;
+      padding: 20px 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      border: none;
+      outline: none;
+      resize: vertical;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    #input-text::placeholder { color: #bbc2dd; }
+
+    /* ── Action Bar ── */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #4f6ef7, #7b5cf0);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 4px 14px rgba(79,110,247,.35);
+      white-space: nowrap;
+    }
+
+    .btn-check:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(79,110,247,.45);
+    }
+
+    .btn-check:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-check:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .btn-clear {
+      border: 1.5px solid var(--border);
+      background: transparent;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-clear:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: var(--red-bg);
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 3px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══════════════════════════════════════════════════════════
+       ERROR / INFO BANNERS
+    ═══════════════════════════════════════════════════════════ */
+    .banner {
+      display: none;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      margin-top: 18px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .banner.error { background: var(--red-bg); color: #b91c1c; border: 1px solid #fecaca; display: flex; }
+    .banner.info  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; display: flex; }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESULTS PANEL
+    ═══════════════════════════════════════════════════════════ */
+    #results-section {
+      display: none;
+      margin-top: 24px;
+    }
+
+    /* ── Score Row ── */
+    .results-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .score-badge {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 24px;
+      border-radius: var(--radius);
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .score-badge.green { background: var(--green-bg); border: 1.5px solid #bbf7d0; }
+    .score-badge.yellow { background: var(--yellow-bg); border: 1.5px solid #fde68a; }
+    .score-badge.red { background: var(--red-bg); border: 1.5px solid #fecaca; }
+
+    .score-circle {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .score-badge.green  .score-circle { background: var(--green);  color: #fff; }
+    .score-badge.yellow .score-circle { background: var(--yellow); color: #fff; }
+    .score-badge.red    .score-circle { background: var(--red);    color: #fff; }
+
+    .score-info h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .score-badge.green  .score-info h3 { color: #15803d; }
+    .score-badge.yellow .score-info h3 { color: #92400e; }
+    .score-badge.red    .score-info h3 { color: #991b1b; }
+
+    .score-info p {
+      font-size: 13px;
+      opacity: .75;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* ── Section Labels ── */
+    .section-label {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-muted);
+      margin: 24px 0 10px;
+    }
+
+    /* ── Corrected Text Box ── */
+    .corrected-box {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      font-size: 15px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      position: relative;
+    }
+
+    .corrected-box .copy-btn {
+      position: absolute;
+      top: 12px; right: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all var(--transition);
+    }
+
+    .corrected-box .copy-btn:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* ── Issues List ── */
+    .issues-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .issue-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--surface);
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    }
+
+    .issue-card:hover {
+      transform: translateX(4px);
+      box-shadow: var(--shadow);
+    }
+
+    .issue-card.type-spelling    { border-color: #fca5a5; background: #fff8f8; }
+    .issue-card.type-grammar     { border-color: #c4b5fd; background: #faf8ff; }
+    .issue-card.type-punctuation { border-color: #6ee7b7; background: #f0fdf8; }
+    .issue-card.type-style       { border-color: #fcd34d; background: #fffdf0; }
+
+    .issue-card.active {
+      box-shadow: 0 0 0 3px var(--primary-glow), var(--shadow-md);
+    }
+
+    .issue-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+      line-height: 1;
+      margin-top: 1px;
+    }
+
+    .issue-body { flex: 1; min-width: 0; }
+
+    .issue-type-label {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      padding: 2px 8px;
+      border-radius: 50px;
+      margin-bottom: 5px;
+    }
+
+    .type-spelling    .issue-type-label { background: #fee2e2; color: #b91c1c; }
+    .type-grammar     .issue-type-label { background: #ede9fe; color: #6d28d9; }
+    .type-punctuation .issue-type-label { background: #d1fae5; color: #065f46; }
+    .type-style       .issue-type-label { background: #fef3c7; color: #92400e; }
+
+    .issue-message {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .issue-footer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .suggestion-pill {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 50px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+    }
+
+    .apply-btn {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 50px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .apply-btn:hover {
+      background: var(--primary-dark);
+      transform: scale(1.05);
+    }
+
+    .apply-btn.applied {
+      background: var(--green);
+      cursor: default;
+    }
+
+    /* No issues badge */
+    .no-issues {
+      text-align: center;
+      padding: 32px;
+      background: var(--green-bg);
+      border-radius: var(--radius);
+      border: 1.5px solid #bbf7d0;
+    }
+
+    .no-issues .ni-icon { font-size: 40px; }
+    .no-issues h3 { color: #15803d; font-size: 18px; margin: 8px 0 4px; }
+    .no-issues p  { color: #16a34a; font-size: 14px; }
+
+    /* ── Highlight in textarea ── */
+    .textarea-highlight {
+      outline: 3px solid var(--primary) !important;
+      background: rgba(79,110,247,.05) !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HISTORY PANEL
+    ═══════════════════════════════════════════════════════════ */
+    .history-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .history-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .btn-refresh {
+      display: flex; align-items: center; gap: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-refresh:hover { border-color: var(--primary); color: var(--primary); }
+
+    .history-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .history-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
+      transition: box-shadow var(--transition);
+    }
+
+    .history-card:hover { box-shadow: var(--shadow); }
+
+    .history-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .history-score {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .hs-green  { background: var(--green); }
+    .hs-yellow { background: var(--yellow); }
+    .hs-red    { background: var(--red); }
+
+    .history-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .history-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .history-text-preview {
+      font-size: 14px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+
+    .history-issues-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .btn-delete {
+      border: none;
+      background: transparent;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: .4;
+      transition: all var(--transition);
+      padding: 4px;
+      border-radius: 8px;
+      line-height: 1;
+    }
+
+    .btn-delete:hover { opacity: 1; background: var(--red-bg); }
+
+    /* Re-check button on history item */
+    .btn-recheck {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 50px;
+      background: transparent;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      cursor: pointer;
+      transition: all var(--transition);
+      margin-top: 10px;
+    }
+
+    .btn-recheck:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .page-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      color: var(--text-muted);
+    }
+
+    .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .page-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    .page-info {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 0 6px;
+    }
+
+    /* ── Empty State ── */
+    .empty-state {
+      text-align: center;
+      padding: 56px 24px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 2px dashed var(--border);
+    }
+
+    .empty-state .es-icon { font-size: 48px; }
+    .empty-state h3 { font-size: 18px; color: var(--text-muted); margin: 12px 0 6px; }
+    .empty-state p  { font-size: 14px; color: #bbc2dd; }
+
+    /* ─── Skeleton loaders ─── */
+    .skeleton {
+      background: linear-gradient(90deg, #e8ecf8 25%, #f5f7ff 50%, #e8ecf8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      height: 88px;
+      border-radius: var(--radius);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════════════════════ */
+    .toast-container {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: all;
+      padding: 12px 20px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      animation: toastIn .25s ease forwards;
+    }
+
+    .toast.success { background: linear-gradient(90deg, #22c55e, #16a34a); }
+    .toast.error   { background: linear-gradient(90deg, #ef4444, #dc2626); }
+    .toast.info    { background: linear-gradient(90deg, #4f6ef7, #7b5cf0); }
+
+    .toast.fade-out { animation: toastOut .3s ease forwards; }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(16px) scale(.92); }
+      to   { opacity: 1; transform: translateY(0)    scale(1);   }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateY(0)    scale(1);   }
+      to   { opacity: 0; transform: translateY(16px) scale(.92); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════════ */
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 32px 0 24px;
+      opacity: .65;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 600px) {
+      header { padding: 36px 0 28px; }
+      .tabs  { width: 100%; justify-content: center; }
+      .tab-btn { padding: 9px 20px; }
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .btn-check  { justify-content: center; }
+      .results-top { flex-direction: column; }
+      .score-badge { min-width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-wrapper">
+
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header>
+      <div class="logo-row">
+        <div class="logo-icon">✍️</div>
+        <h1>GrammarCheck</h1>
+      </div>
+      <p class="tagline">Instant grammar, spelling &amp; style analysis — powered by AI</p>
+    </header>
+
+    <!-- ═══════════ TABS ═══════════ -->
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" role="tab" data-tab="checker" id="tab-checker">
+        ✍️ Checker
+      </button>
+      <button class="tab-btn" role="tab" data-tab="history" id="tab-history">
+        🕑 History
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         TAB 1: CHECKER
+    ═══════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-checker">
+
+      <!-- Input card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📄 Your Text</span>
+          <span class="char-counter" id="char-counter">0 / 10,000</span>
+        </div>
+
+        <textarea
+          id="input-text"
+          placeholder="Paste or type your text here… e.g. &quot;I recieve alot of emails everyday but their not always helpful.&quot;"
+          maxlength="10000"
+          aria-label="Text to check"
+        ></textarea>
+
+        <div class="action-bar">
+          <button class="btn-clear" id="btn-clear" type="button">🗑 Clear</button>
+          <button class="btn-check" id="btn-check" type="button">
+            <span class="spinner" id="spinner"></span>
+            <span id="btn-text">Check Grammar →</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error / info banner -->
+      <div class="banner error" id="error-banner" role="alert">
+        <span>⚠️</span>
+        <span id="error-message">Something went wrong. Please try again.</span>
+      </div>
+
+      <!-- ── RESULTS SECTION ── -->
+      <section id="results-section" aria-live="polite">
+
+        <!-- Top row: score + stats -->
+        <div class="results-top">
+          <div class="score-badge" id="score-badge">
+            <div class="score-circle" id="score-circle">–</div>
+            <div class="score-info">
+              <h3 id="score-label">Grammar Score</h3>
+              <p id="score-sublabel">Analysing…</p>
+            </div>
+          </div>
+          <div class="stats-row" id="stats-row"></div>
+        </div>
+
+        <!-- Corrected text -->
+        <div class="section-label">✅ Corrected Version</div>
+        <div class="corrected-box" id="corrected-box">
+          <button class="copy-btn" id="copy-corrected" type="button">Copy</button>
+          <span id="corrected-text-content"></span>
+        </div>
+
+        <!-- Issues -->
+        <div class="section-label" id="issues-label">📋 Issues Found</div>
+        <div class="issues-grid" id="issues-grid"></div>
+
+      </section>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         TAB 2: HISTORY
+    ═══════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-history">
+      <div class="history-toolbar">
+        <span class="history-title">🕑 Check History</span>
+        <button class="btn-refresh" id="btn-refresh" type="button">
+          <span id="refresh-icon">🔄</span> Refresh
+        </button>
+      </div>
+
+      <div class="history-list" id="history-list">
+        <!-- populated by JS -->
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+  </div><!-- /app-wrapper -->
+
+  <!-- Footer -->
+  <footer>GrammarCheck · Built with Express + PostgreSQL · Vanilla JS</footer>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       JAVASCRIPT
+  ═══════════════════════════════════════════════════════════ -->
+  <script>
+    'use strict';
+
+    // ── Config ───────────────────────────────────────────────────
+    const API_BASE = 'http://localhost:3001/api';
+    const PAGE_SIZE = 10;
+
+    // ── State ────────────────────────────────────────────────────
+    let currentResult  = null;   // last check result
+    let historyPage    = 0;      // current history offset (index)
+    let historyTotal   = 0;
+    let isChecking     = false;
+    let activeIssueIdx = -1;
+
+    // ── DOM refs ─────────────────────────────────────────────────
+    const inputText       = document.getElementById('input-text');
+    const charCounter     = document.getElementById('char-counter');
+    const btnCheck        = document.getElementById('btn-check');
+    const btnClear        = document.getElementById('btn-clear');
+    const btnText         = document.getElementById('btn-text');
+    const spinner         = document.getElementById('spinner');
+    const errorBanner     = document.getElementById('error-banner');
+    const errorMsg        = document.getElementById('error-message');
+    const resultsSection  = document.getElementById('results-section');
+    const scoreBadge      = document.getElementById('score-badge');
+    const scoreCircle     = document.getElementById('score-circle');
+    const scoreLabel      = document.getElementById('score-label');
+    const scoreSublabel   = document.getElementById('score-sublabel');
+    const statsRow        = document.getElementById('stats-row');
+    const correctedBox    = document.getElementById('corrected-box');
+    const correctedContent= document.getElementById('corrected-text-content');
+    const copyBtn         = document.getElementById('copy-corrected');
+    const issuesGrid      = document.getElementById('issues-grid');
+    const issuesLabel     = document.getElementById('issues-label');
+    const historyList     = document.getElementById('history-list');
+    const pagination      = document.getElementById('pagination');
+    const btnRefresh      = document.getElementById('btn-refresh');
+    const toastContainer  = document.getElementById('toast-container');
+
+    // ── Tabs ─────────────────────────────────────────────────────
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        const panel = document.getElementById(`panel-${btn.dataset.tab}`);
+        panel.classList.add('active');
+        if (btn.dataset.tab === 'history') loadHistory();
+      });
+    });
+
+    // ── Character counter ────────────────────────────────────────
+    inputText.addEventListener('input', () => {
+      const len = inputText.value.length;
+      charCounter.textContent = `${len.toLocaleString()} / 10,000`;
+      charCounter.className = 'char-counter' +
+        (len > 9500 ? ' error' : len > 8000 ? ' warn' : '');
+    });
+
+    // ── Clear ────────────────────────────────────────────────────
+    btnClear.addEventListener('click', () => {
+      inputText.value = '';
+      charCounter.textContent = '0 / 10,000';
+      charCounter.className = 'char-counter';
+      hideResults();
+      hideError();
+    });
+
+    // ── Copy corrected text ──────────────────────────────────────
+    copyBtn.addEventListener('click', async () => {
+      const txt = correctedContent.textContent;
+      if (!txt) return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+        showToast('Copied to clipboard ✓', 'success');
+      } catch {
+        showToast('Could not copy — please select manually', 'error');
+      }
+    });
+
+    // ── Check Grammar ────────────────────────────────────────────
+    btnCheck.addEventListener('click', runCheck);
+    inputText.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') runCheck();
+    });
+
+    async function runCheck() {
+      const text = inputText.value.trim();
+      if (!text) { showError('Please enter some text before checking.'); return; }
+      if (isChecking) return;
+
+      setLoading(true);
+      hideError();
+      hideResults();
+
+      try {
+        const resp = await fetch(`${API_BASE}/check`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ text }),
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.message || `Server responded with ${resp.status}`);
+        }
+
+        currentResult = await resp.json();
+        renderResults(currentResult);
+
+      } catch (err) {
+        const isNetwork = err instanceof TypeError;
+        showError(
+          isNetwork
+            ? 'Cannot reach the server. Is the backend running on port 3001?'
+            : err.message
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // ── Render Results ────────────────────────────────────────────
+    function renderResults(data) {
+      const { score, corrected_text, issues } = data;
+
+      // Score badge
+      const cls = score >= 80 ? 'green' : score >= 60 ? 'yellow' : 'red';
+      scoreBadge.className   = `score-badge ${cls}`;
+      scoreCircle.textContent = score;
+
+      const labels = {
+        green:  ['Excellent!',    'Great grammar and style.'],
+        yellow: ['Needs Work',    'A few issues to address.'],
+        red:    ['Needs Revision','Several errors found.'],
+      };
+      scoreLabel.textContent    = labels[cls][0];
+      scoreSublabel.textContent = labels[cls][1];
+
+      // Stats chips
+      const counts = { grammar: 0, spelling: 0, punctuation: 0, style: 0 };
+      issues.forEach(i => { if (counts[i.type] !== undefined) counts[i.type]++; });
+
+      const iconMap = { grammar: '📝', spelling: '🔤', punctuation: '✏️', style: '💡' };
+      statsRow.innerHTML = Object.entries(counts)
+        .filter(([, v]) => v > 0)
+        .map(([k, v]) => `<div class="stat-chip">${iconMap[k]} ${v} ${k}</div>`)
+        .join('');
+
+      // Corrected text
+      correctedContent.textContent = corrected_text || '(No corrections needed)';
+
+      // Issues
+      if (!issues || issues.length === 0) {
+        issuesLabel.textContent = '✅ No Issues Found';
+        issuesGrid.innerHTML = `
+          <div class="no-issues">
+            <div class="ni-icon">🎉</div>
+            <h3>Your text looks great!</h3>
+            <p>No grammar, spelling, or style issues were detected.</p>
+          </div>`;
+      } else {
+        issuesLabel.textContent = `📋 ${issues.length} Issue${issues.length !== 1 ? 's' : ''} Found`;
+        issuesGrid.innerHTML = issues.map((issue, idx) => buildIssueCard(issue, idx)).join('');
+
+        // Wire up issue card clicks + apply buttons
+        issuesGrid.querySelectorAll('.issue-card').forEach((card, idx) => {
+          card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('apply-btn')) return;
+            highlightIssueInTextarea(issues[idx], idx);
+          });
+        });
+
+        issuesGrid.querySelectorAll('.apply-btn').forEach((btn, idx) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (btn.classList.contains('applied')) return;
+            applySuggestion(issues[idx], idx);
+          });
+        });
+      }
+
+      resultsSection.style.display = 'block';
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function buildIssueCard(issue, idx) {
+      const iconMap = { spelling: '🔤', grammar: '📝', punctuation: '✏️', style: '💡' };
+      const icon     = iconMap[issue.type] || '⚠️';
+      const hasSugg  = issue.suggestion !== undefined && issue.suggestion !== null;
+      const suggText = hasSugg && issue.suggestion !== ''
+        ? issue.suggestion
+        : '(remove)';
+
+      return `
+        <div class="issue-card type-${issue.type}" data-idx="${idx}" tabindex="0" role="button"
+             aria-label="${issue.type} issue: ${issue.message}">
+          <div class="issue-icon">${icon}</div>
+          <div class="issue-body">
+            <span class="issue-type-label">${issue.type}</span>
+            <div class="issue-message">${escHtml(issue.message)}</div>
+            <div class="issue-footer">
+              ${hasSugg
+                ? `<span class="suggestion-pill">${escHtml(suggText)}</span>
+                   <button class="apply-btn" data-idx="${idx}" type="button">Apply ✓</button>`
+                : ''}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // ── Highlight in textarea ─────────────────────────────────────
+    function highlightIssueInTextarea(issue, idx) {
+      // Remove previous active card
+      document.querySelectorAll('.issue-card.active').forEach(c => c.classList.remove('active'));
+
+      const card = document.querySelector(`.issue-card[data-idx="${idx}"]`);
+      if (card) card.classList.add('active');
+
+      activeIssueIdx = idx;
+
+      // Select in textarea
+      inputText.focus();
+      inputText.setSelectionRange(issue.offset, issue.offset + issue.length);
+
+      // Scroll textarea to show selection (works if textarea isn't too big)
+      inputText.classList.add('textarea-highlight');
+      setTimeout(() => inputText.classList.remove('textarea-highlight'), 1500);
+    }
+
+    // ── Apply suggestion ──────────────────────────────────────────
+    function applySuggestion(issue, idx) {
+      const btn = document.querySelector(`.apply-btn[data-idx="${idx}"]`);
+
+      // Apply to textarea value
+      const original = inputText.value;
+      const before   = original.slice(0, issue.offset);
+      const after    = original.slice(issue.offset + issue.length);
+      const suggestion = issue.suggestion ?? '';
+      inputText.value = before + suggestion + after;
+
+      // Update char counter
+      charCounter.textContent = `${inputText.value.length.toLocaleString()} / 10,000`;
+
+      // Mark applied
+      if (btn) {
+        btn.textContent = 'Applied ✓';
+        btn.classList.add('applied');
+        btn.disabled = true;
+      }
+
+      showToast(`Applied: "${suggestion || '(removed)'}"`, 'success');
+    }
+
+    // ── UI helpers ────────────────────────────────────────────────
+    function setLoading(on) {
+      isChecking = on;
+      btnCheck.disabled = on;
+      spinner.style.display = on ? 'block' : 'none';
+      btnText.textContent   = on ? 'Checking…' : 'Check Grammar →';
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorBanner.style.display = 'flex';
+    }
+
+    function hideError() { errorBanner.style.display = 'none'; }
+
+    function hideResults() {
+      resultsSection.style.display = 'none';
+      currentResult = null;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────
+    function showToast(message, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast ${type}`;
+      el.textContent = message;
+      toastContainer.appendChild(el);
+      setTimeout(() => {
+        el.classList.add('fade-out');
+        el.addEventListener('animationend', () => el.remove());
+      }, 2800);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  HISTORY
+    // ═══════════════════════════════════════════════════════════
+
+    async function loadHistory(pageIdx = 0) {
+      historyPage = pageIdx;
+      historyList.innerHTML = buildSkeletons(3);
+      pagination.innerHTML  = '';
+
+      const offset = pageIdx * PAGE_SIZE;
+
+      try {
+        const resp = await fetch(
+          `${API_BASE}/history?limit=${PAGE_SIZE}&offset=${offset}`
+        );
+
+        if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+
+        const data = await resp.json();
+        historyTotal = data.total;
+        renderHistory(data.data);
+        renderPagination(data.total, pageIdx);
+
+      } catch (err) {
+        historyList.innerHTML = `
+          <div class="empty-state">
+            <div class="es-icon">⚠️</div>
+            <h3>Could not load history</h3>
+            <p>${escHtml(err.message)}</p>
+          </div>`;
+      }
+    }
+
+    function buildSkeletons(n) {
+      return Array(n).fill('')
+        .map(() => `<div class="skeleton skeleton-card"></div>`)
+        .join('');
+    }
+
+    function renderHistory(records) {
+      if (!records || records.length === 0) {
+        historyList.innerHTML = `
+          <div class="empty-state">
+            <div class="es-icon">📭</div>
+            <h3>No history yet</h3>
+            <p>Run your first grammar check to see results here.</p>
+          </div>`;
+        return;
+      }
+
+      historyList.innerHTML = records.map(r => buildHistoryCard(r)).join('');
+
+      // Wire delete buttons
+      historyList.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', () => deleteHistoryRecord(btn.dataset.id));
+      });
+
+      // Wire re-check buttons
+      historyList.querySelectorAll('.btn-recheck').forEach(btn => {
+        btn.addEventListener('click', () => {
+          inputText.value = btn.dataset.text;
+          charCounter.textContent = `${inputText.value.length.toLocaleString()} / 10,000`;
+          // Switch to checker tab
+          document.getElementById('tab-checker').click();
+          showToast('Text loaded — hit Check Grammar!', 'info');
+        });
+      });
+    }
+
+    function buildHistoryCard(r) {
+      const score = r.score ?? 0;
+      const cls   = score >= 80 ? 'hs-green' : score >= 60 ? 'hs-yellow' : 'hs-red';
+      const issues = Array.isArray(r.issues) ? r.issues : [];
+      const date   = new Date(r.created_at).toLocaleString();
+      const preview = (r.original_text || '').slice(0, 120) +
+                      (r.original_text?.length > 120 ? '…' : '');
+
+      const typeCounts = { grammar: 0, spelling: 0, punctuation: 0, style: 0 };
+      issues.forEach(i => { if (typeCounts[i.type] !== undefined) typeCounts[i.type]++; });
+      const countStr = Object.entries(typeCounts)
+        .filter(([, v]) => v > 0)
+        .map(([k, v]) => `${v} ${k}`)
+        .join(' · ') || 'No issues';
+
+      return `
+        <div class="history-card" id="hcard-${r.id}">
+          <div class="history-card-top">
+            <div class="history-score ${cls}">${score}</div>
+            <div class="history-meta">
+              <div class="history-date">🕐 ${escHtml(date)}</div>
+              <div class="history-text-preview">${escHtml(preview)}</div>
+              <div class="history-issues-count">Issues: ${countStr}</div>
+            </div>
+            <button class="btn-delete" data-id="${r.id}" type="button"
+                    title="Delete this record" aria-label="Delete">🗑</button>
+          </div>
+          <button class="btn-recheck"
+                  data-text="${escHtml(r.original_text || '')}"
+                  type="button">↩ Re-check this text</button>
+        </div>`;
+    }
+
+    async function deleteHistoryRecord(id) {
+      if (!confirm('Delete this record from history?')) return;
+      try {
+        const resp = await fetch(`${API_BASE}/history/${id}`, { method: 'DELETE' });
+        if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+        document.getElementById(`hcard-${id}`)?.remove();
+        historyTotal--;
+        renderPagination(historyTotal, historyPage);
+        showToast('Record deleted ✓', 'success');
+      } catch (err) {
+        showToast(`Delete failed: ${err.message}`, 'error');
+      }
+    }
+
+    function renderPagination(total, currentPage) {
+      const pages = Math.ceil(total / PAGE_SIZE);
+      if (pages <= 1) { pagination.innerHTML = ''; return; }
+
+      let html = '';
+
+      // Prev button
+      html += `<button class="page-btn" ${currentPage === 0 ? 'disabled' : ''}
+                       onclick="loadHistory(${currentPage - 1})">‹</button>`;
+
+      // Page numbers (show up to 7, with ellipsis)
+      const range = buildPageRange(currentPage, pages);
+      range.forEach(p => {
+        if (p === '…') {
+          html += `<span class="page-info">…</span>`;
+        } else {
+          html += `<button class="page-btn ${p === currentPage ? 'active' : ''}"
+                           onclick="loadHistory(${p})">${p + 1}</button>`;
+        }
+      });
+
+      // Next button
+      html += `<button class="page-btn" ${currentPage >= pages - 1 ? 'disabled' : ''}
+                       onclick="loadHistory(${currentPage + 1})">›</button>`;
+
+      html += `<span class="page-info">${total.toLocaleString()} total</span>`;
+
+      pagination.innerHTML = html;
+    }
+
+    function buildPageRange(current, total) {
+      if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+      const pages = [];
+      pages.push(0);
+      if (current > 3) pages.push('…');
+      for (let i = Math.max(1, current - 1); i <= Math.min(total - 2, current + 1); i++) {
+        pages.push(i);
+      }
+      if (current < total - 4) pages.push('…');
+      pages.push(total - 1);
+      return pages;
+    }
+
+    // Refresh history button
+    btnRefresh.addEventListener('click', () => {
+      const icon = document.getElementById('refresh-icon');
+      icon.style.display = 'inline-block';
+      icon.animate([{ transform: 'rotate(0)' }, { transform: 'rotate(360deg)' }],
+        { duration: 500, easing: 'ease-in-out' });
+      loadHistory(historyPage);
+      showToast('History refreshed', 'info');
+    });
+
+    // ─── Initial load (checker tab is active, history loaded lazily) ───
+    inputText.focus();
+  </script>
+</body>
+</html>
